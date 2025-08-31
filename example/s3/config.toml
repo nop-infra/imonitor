@@ -1,0 +1,9 @@
+log_file_path = "/var/log/myapp.log"
+#max_file_size_mb = 10
+chunk_size_mb = 100
+check_interval_seconds = 60
+
+[s3]
+bucket = "rm1068200"
+prefix = "logs/"
+endpoint = "https://s3.gra.io.cloud.ovh.net/"

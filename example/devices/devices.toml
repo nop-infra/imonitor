@@ -1,0 +1,5 @@
+[[devices]]
+udid = "00008030-000A74863A50802E"
+pairing_file_path = "token_perso.plist"
+ip = "10.0.0.2"
+connection_label = "559bcb01-e186-4a40-ae68-f491c249e017"

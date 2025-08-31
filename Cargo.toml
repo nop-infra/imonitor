@@ -1,0 +1,16 @@
+[workspace]
+members = ["src/imonitor-lib", "src/imonitor", "src/imonitor-enroll", "src/logger", "src/imonitor-send"]
+default-members = ["src/imonitor", "src/logger"]
+resolver = "3"
+
+[profile.dev]
+opt-level = 0
+debug = true
+
+[profile.release]
+opt-level = 3
+debug = false
+panic = "abort"
+lto = true
+codegen-units = 1
+strip = true

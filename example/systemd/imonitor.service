@@ -1,0 +1,13 @@
+[Unit]
+Description=imonitor
+
+[Service]
+User=root
+Type=simple
+Restart=always
+RestartSec=5s
+ExecStart=/home/user/Mobile/imonitor
+WorkingDirectory=/home/user/Mobile
+
+[Install]
+WantedBy=multi-user.target

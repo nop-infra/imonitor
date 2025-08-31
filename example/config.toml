@@ -1,0 +1,12 @@
+[config]
+refresh_rate = "15s"
+base_dir = "/home/user/imnonitor"
+
+[encryption]
+public_keys = [
+  """
+-----BEGIN PUBLIC KEY-----
+MCowBQYDK2VuAyEADkwQAdFNRcEPUNgh5JjKPBXprjKwCsF6sEa8Xm7iRV0=
+-----END PUBLIC KEY-----
+  """
+]

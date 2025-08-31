@@ -1,0 +1,18 @@
+[Unit]
+Description=Upload to S3
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/imonitor-send
+Restart=on-failure
+RestartSec=5
+#Environment=RUST_LOG=info
+EnvironmentFile=/etc/log_uploader/env
+StandardOutput=journal
+StandardError=journal
+User=user
+WorkingDirectory=/user/home/imonitor
+
+[Install]
+WantedBy=multi-user.target
