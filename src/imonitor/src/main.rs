@@ -52,7 +52,8 @@ async fn main() {
     let mut monitor_tasks = tokio::task::JoinSet::new();
 
     for device_config in monitored_devices.devices {
-        //let mut device: Device = match device_config.clone().try_into() {
+
+        // Get base path from config
         let base_path;
         {
             base_path = config
@@ -61,6 +62,7 @@ async fn main() {
                 .get_base_dir();
         }
 
+        // Initialize device from monitored devices config
         let mut device: Device = match device_config.clone().try_into_device(base_path) {
             Ok(device) => device,
             Err(e) => {
@@ -68,12 +70,15 @@ async fn main() {
                 return;
             }
         };
+
+        // Create device dirs on fs
         if let Err(e) = device.create_dirs() {
             println!("Failed to create dirs for device {}: {e}", device.info.udid);
             return;
             //continue;
         }
 
+        // Load activity coverage from fs
         if let Err(e) = device.load_activity_coverage().await {
             println!(
                 "Failed to load activity coverage for device {}: {e}",
@@ -83,6 +88,9 @@ async fn main() {
             continue;
         }
 
+        // Add device to vec of succeded devices to monitor and 
+        // write pairing file to final destination
+        // This will be used to write final devices.toml file
         let mut device_config_final = device_config.clone();
         device_config_final.pairing_file_path = device.get_pairing_file_path();
         monitored_devices_final.devices.push(device_config_final);
@@ -99,7 +107,6 @@ async fn main() {
                 device.info.udid
             );
             return;
-            //continue;
         }
 
         if let Err(e) = device.init_logger() {
@@ -108,9 +115,11 @@ async fn main() {
         }
 
         let config_clone = config.clone();
+        // Add device monitor task to queue. Will be awaited
         monitor_tasks.spawn(async move { device.monitor(config_clone).await });
     }
 
+    // Await all monitored devices tasks
     while let Some(res) = monitor_tasks.join_next().await {
         match res {
             Err(e) => {

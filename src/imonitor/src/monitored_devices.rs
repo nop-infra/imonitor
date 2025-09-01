@@ -63,21 +63,3 @@ impl DeviceConfig {
         ))
     }
 }
-
-/*
-impl TryInto<Device> for DeviceConfig {
-    type Error = DeviceError;
-
-    fn try_into(self) -> Result<Device, DeviceError> {
-        let pairing_file = PairingFile::read_from_file(&self.pairing_file_path)
-            .map_err(DeviceError::ReadPairingFile)?;
-
-        Ok(Device::new(
-            &self.udid,
-            &pairing_file,
-            &self.ip,
-            &self.connection_label,
-        ))
-    }
-}
-*/
