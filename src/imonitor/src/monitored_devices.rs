@@ -49,6 +49,22 @@ impl MonitoredDevices {
     }
 }
 
+impl DeviceConfig {
+    pub fn try_into_device(self, base_dir: impl AsRef<Path>) -> Result<Device, DeviceError> {
+        let pairing_file = PairingFile::read_from_file(&self.pairing_file_path)
+            .map_err(DeviceError::ReadPairingFile)?;
+
+        Ok(Device::new(
+            &self.udid,
+            &pairing_file,
+            &self.ip,
+            &self.connection_label,
+            base_dir.as_ref(),
+        ))
+    }
+}
+
+/*
 impl TryInto<Device> for DeviceConfig {
     type Error = DeviceError;
 
@@ -64,3 +80,4 @@ impl TryInto<Device> for DeviceConfig {
         ))
     }
 }
+*/

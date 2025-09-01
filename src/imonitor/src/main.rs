@@ -9,6 +9,7 @@ pub mod monitored_devices;
 use monitored_devices::MonitoredDevices;
 
 const MONITORED_DEVICES_FILE_PATH: &str = "devices.toml";
+const CONFIG_FILE_NAME: &str = "config.toml";
 
 /// Setup config
 fn setup(config_folder: &Path) -> Arc<RwLock<Config>> {
@@ -20,7 +21,7 @@ fn setup(config_folder: &Path) -> Arc<RwLock<Config>> {
             }
             PathBuf::from(path)
         }
-        None => config_folder.join("config.toml"),
+        None => config_folder.join(CONFIG_FILE_NAME),
     };
 
     if !config_path.exists() {
@@ -51,7 +52,16 @@ async fn main() {
     let mut monitor_tasks = tokio::task::JoinSet::new();
 
     for device_config in monitored_devices.devices {
-        let mut device: Device = match device_config.clone().try_into() {
+        //let mut device: Device = match device_config.clone().try_into() {
+        let base_path;
+        {
+            base_path = config
+                .read()
+                .expect("Failed to get config read lock for base_path")
+                .get_base_dir();
+        }
+
+        let mut device: Device = match device_config.clone().try_into_device(base_path) {
             Ok(device) => device,
             Err(e) => {
                 println!("Failed to create device from config: {e}");

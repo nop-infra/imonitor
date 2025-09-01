@@ -37,4 +37,8 @@ impl Config {
         let config: Config = toml::from_str(&config_str)?;
         Ok(config)
     }
+
+    pub fn get_base_dir(&self) -> String {
+        self.settings.base_dir.clone()
+    }
 }

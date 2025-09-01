@@ -13,6 +13,7 @@ use phf::phf_map;
 use std::collections::HashSet;
 use std::fs::create_dir_all;
 use std::net::IpAddr;
+use std::path::Path;
 use std::path::PathBuf;
 use std::sync::{Arc, RwLock};
 use tokio::fs::File;
@@ -20,7 +21,6 @@ use tokio::io::{AsyncWriteExt, BufWriter};
 use tokio::sync::watch;
 use tokio::{task::JoinHandle, try_join};
 
-const BASE_DIR: &str = "/home/user/imonitor";
 static SUB_DIRS: phf::Map<&'static str, &'static str> = phf_map! {
     "info" => "info",
     "connection" => "connection",
@@ -43,6 +43,7 @@ pub struct Device {
     pub crashes: Crashes,
     pub logger: Option<Arc<Logger>>,
     pub activity_coverage: Arc<RwLock<ActivityCoverage>>,
+    pub base_dir: String,
 }
 
 #[derive(Debug, Clone)]
@@ -116,7 +117,13 @@ impl Connection {
 }
 
 impl Device {
-    pub fn new(udid: &str, pairing_file: &PairingFile, ip_addr: &IpAddr, label: &str) -> Device {
+    pub fn new(
+        udid: &str,
+        pairing_file: &PairingFile,
+        ip_addr: &IpAddr,
+        label: &str,
+        base_dir: impl AsRef<Path>,
+    ) -> Device {
         let connection = Connection::new(pairing_file, ip_addr, label);
 
         Device {
@@ -126,6 +133,7 @@ impl Device {
             crashes: Crashes::new(),
             logger: None,
             activity_coverage: Arc::new(RwLock::new(ActivityCoverage::new())),
+            base_dir: base_dir.as_ref().to_string_lossy().to_string(),
         }
     }
 
@@ -137,8 +145,8 @@ impl Device {
     }
 
     pub fn base_dir(&self) -> String {
-        let base_path = PathBuf::from(BASE_DIR);
-        base_path
+        let general_base_dir = PathBuf::from(&self.base_dir);
+        general_base_dir
             .join(self.info.udid.clone())
             .to_string_lossy()
             .to_string()

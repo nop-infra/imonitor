@@ -23,15 +23,14 @@
   - [x] Compare with syslog relay
   - [x] Write JSON instead of debug form
   - [x] Ask idevice maintainer to derive Serialize for OsTraceLog and nested structs
+- Use base_dir from config
 
 ## To finish
 - Persist covered_activity to fs
   - Check why first recorded period is not written
 
-
 ## TODO
 
-- Use base_dir from config
 - Fix activity_coverage : when log start streaming but get back online without heartbeat (at most RECONNECT_WAITING_TIME lost but not in gaps)
 - Fix os trace archive
   - Maximum size not working
