@@ -78,12 +78,15 @@ async fn main() {
     // Add the UDID
     pairing_file.udid = Some(dev.udid.clone());
 
+    let pairing_file_name = format!("{}_pairing_file.plist", dev.udid);
     tokio::fs::write(
-        format!("{}_pairing_file.plist", dev.udid),
+        pairing_file_name.clone(),
         pairing_file
             .serialize()
             .expect("Failed to serialize pairing file"),
     )
     .await
     .expect("Failed to write pairing file");
+
+    println!("Pairing file generated at: {pairing_file_name}");
 }

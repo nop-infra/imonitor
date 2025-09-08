@@ -38,6 +38,7 @@
     - The dates older than first log of last retrieved archive sould be discarded
   - Set maximum size of unified logs retrieved -> not working
     - Get last log and insert corresponding covered range
+  - Fix TODO
 - Handle config/monitored devices path as CLI parameters
 - Harmonize refresh rates and use configuration values
 - Generate new pairing file at each connection

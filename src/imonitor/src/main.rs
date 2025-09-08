@@ -52,7 +52,6 @@ async fn main() {
     let mut monitor_tasks = tokio::task::JoinSet::new();
 
     for device_config in monitored_devices.devices {
-
         // Get base path from config
         let base_path;
         {
@@ -88,7 +87,7 @@ async fn main() {
             continue;
         }
 
-        // Add device to vec of succeded devices to monitor and 
+        // Add device to vec of succeded devices to monitor and
         // write pairing file to final destination
         // This will be used to write final devices.toml file
         let mut device_config_final = device_config.clone();

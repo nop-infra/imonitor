@@ -16,7 +16,6 @@ use tracing::{error, info, warn};
 #[derive(Deserialize)]
 struct Config {
     log_file_path: String,
-    //max_file_size_mb: u64,
     chunk_size_mb: usize,
     check_interval_seconds: u64,
     s3: S3Config,
@@ -73,6 +72,11 @@ async fn build_s3_client(
         .await;
 
     Ok(Client::new(&aws_config))
+}
+
+async fn process_all_logs(client: &Client, config: &Config) -> Result<(), Box<dyn Error>> {
+    // Find all logs in dirs
+    // Process logs
 }
 
 async fn process_log_file(client: &Client, config: &Config) -> Result<(), Box<dyn Error>> {

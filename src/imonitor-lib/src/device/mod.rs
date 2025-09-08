@@ -348,7 +348,7 @@ impl Device {
             //flatten(syslog),
             flatten(crashes),
             flatten(os_trace_log),
-            flatten(os_trace_archive),
+            //flatten(os_trace_archive),
         )?;
 
         Ok(())

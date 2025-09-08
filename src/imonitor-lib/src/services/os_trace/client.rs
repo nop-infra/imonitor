@@ -203,6 +203,8 @@ impl Device {
                                     .activity_coverage
                                     .write()
                                     .map_err(|_| OsTraceError::WriteLock)?;
+                                // TODO: Add range from oldest time in coverage, not oldest time in
+                                // archive (we cannot get data before archive beginning)
                                 activity_coverage
                                     .add_range(extract_time_coverage_from_tar(&archive_file_path)?);
                                 coverage = activity_coverage.clone();
