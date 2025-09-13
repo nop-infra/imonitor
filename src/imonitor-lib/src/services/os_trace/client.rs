@@ -190,6 +190,7 @@ impl Device {
                                 .duration_since(SystemTime::UNIX_EPOCH)
                                 .map_err(OsTraceError::OppositeTime)?
                                 .as_secs();
+
                             info!(self, "Creating archive beginning at {archive_start}");
                             // Check if archive was finished
                             os_trace_client
@@ -203,10 +204,12 @@ impl Device {
                                     .activity_coverage
                                     .write()
                                     .map_err(|_| OsTraceError::WriteLock)?;
+
                                 // TODO: Add range from oldest time in coverage, not oldest time in
                                 // archive (we cannot get data before archive beginning)
-                                activity_coverage
-                                    .add_range(extract_time_coverage_from_tar(&archive_file_path)?);
+                                let tar_coverage =
+                                    extract_time_coverage_from_tar(&archive_file_path)?;
+                                activity_coverage.add_range(gap.start..tar_coverage.end);
                                 coverage = activity_coverage.clone();
                             }
                             coverage
