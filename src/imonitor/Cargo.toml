@@ -5,8 +5,9 @@ edition = "2024"
 
 [dependencies]
 imonitor-lib = { path = "../imonitor-lib"}
-#idevice = { version = "=0.1.37", features = ["full"] }
-idevice = { git = "https://github.com/jkcoxson/idevice.git", features = ["full"] }
+#idevice = { version = "=0.1.40", features = ["full"] }
+idevice = { path = "../idevice", features = ["full","aws-lc"], default-features = false}
+#idevice = { git = "https://github.com/jkcoxson/idevice.git", features = ["full"] }
 tokio = { version = "1", features = ["full"] }
 env_logger = "0"
 log = "0"

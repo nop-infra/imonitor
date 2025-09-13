@@ -313,12 +313,17 @@ impl Device {
 
         /*
         // No parallelized version
-        let hb = self.maintain_heartbeat(config);
-        let syslog = self.stream_syslog(refresh_rate);
-        let crashes = self.get_crashes(refresh_rate);
-        let _ = tokio::join!(hb, syslog, crashes);
+        let hb = self.maintain_heartbeat(config, &tx);
+        //let syslog = self.stream_syslog(refresh_rate);
+        let crashes = self.get_crashes(refresh_rate, &mut rx);
+        let os_trace_log = self.stream_os_trace_logs(refresh_rate, &mut os_trace_log_hb_rx);
+        let os_trace_archive = self.create_os_trace_archive(refresh_rate, &mut os_trace_archive_hb_rx);
+        let _ = tokio::join!(hb, crashes, os_trace_log, os_trace_archive);
         */
 
+        device_hb.maintain_heartbeat(config, &tx).await?;
+
+        /*
         let hb = tokio::spawn(async move { device_hb.maintain_heartbeat(config, &tx).await });
         /*
         let _syslog =
@@ -336,6 +341,7 @@ impl Device {
                 .create_os_trace_archive(refresh_rate, &mut os_trace_archive_hb_rx)
                 .await
         });
+        */
 
         /*
         let _ = hb.await;
@@ -343,13 +349,15 @@ impl Device {
         let _ = crashes.await;
         */
 
+        /*
         try_join!(
             flatten(hb),
             //flatten(syslog),
             flatten(crashes),
             flatten(os_trace_log),
-            //flatten(os_trace_archive),
+            flatten(os_trace_archive),
         )?;
+        */
 
         Ok(())
     }

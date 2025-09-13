@@ -7,7 +7,7 @@ use std::sync::{Arc, RwLock};
 
 pub mod monitored_devices;
 use monitored_devices::MonitoredDevices;
-
+use tokio::sync::watch;
 const MONITORED_DEVICES_FILE_PATH: &str = "devices.toml";
 const CONFIG_FILE_NAME: &str = "config.toml";
 
@@ -49,7 +49,7 @@ async fn main() {
 
     let mut monitored_devices_final = MonitoredDevices::default();
 
-    let mut monitor_tasks = tokio::task::JoinSet::new();
+    //let mut monitor_tasks = tokio::task::JoinSet::new();
 
     for device_config in monitored_devices.devices {
         // Get base path from config
@@ -115,9 +115,12 @@ async fn main() {
 
         let config_clone = config.clone();
         // Add device monitor task to queue. Will be awaited
-        monitor_tasks.spawn(async move { device.monitor(config_clone).await });
+        let (tx, mut rx) = watch::channel(false);
+        device.maintain_heartbeat(config_clone, &tx).await.unwrap();
+        //monitor_tasks.spawn(async move { device.monitor(config_clone).await });
     }
 
+    /*
     // Await all monitored devices tasks
     while let Some(res) = monitor_tasks.join_next().await {
         match res {
@@ -132,4 +135,5 @@ async fn main() {
             }
         }
     }
+    */
 }
