@@ -35,10 +35,13 @@ impl Device {
         let provider = self.get_provider("heartbeat");
         loop {
             info!(self, "Connecting to heartbeat");
+            connected_sender
+                .send(true)
+                .map_err(HeartbeatError::SendConnectedState)?;
             if let Ok(timeout_res) = timeout(
                 // TODO : delete timeout
                 // 1h
-                Duration::from_secs(60 * 60),
+                Duration::from_secs(10),
                 HeartbeatClient::connect(&*provider),
             )
             .await
@@ -55,6 +58,9 @@ impl Device {
                         client
                     }
                     Err(e) => {
+                        connected_sender
+                            .send(false)
+                            .map_err(HeartbeatError::SendConnectedState)?;
                         error!(self, "Unable to connect to heartbeat: {e}");
                         sleep(Duration::from_secs(RETRY_CONNECT_WAIT_SECS)).await;
                         continue;
@@ -85,7 +91,11 @@ impl Device {
                 }
                 sleep(Duration::from_secs(RETRY_CONNECT_WAIT_SECS)).await;
             } else {
-                sleep(Duration::from_secs(RETRY_CONNECT_WAIT_SECS)).await;
+                info!(self, "Timeout while connecting to heartbeat, trying to use services either way");
+                connected_sender
+                    .send(true)
+                    .map_err(HeartbeatError::SendConnectedState)?;
+                sleep(Duration::from_secs(240)).await;
             }
         }
     }
