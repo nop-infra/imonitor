@@ -9,10 +9,12 @@ use std::sync::{Arc, RwLock};
 use tokio::fs::File;
 use tokio::io::{AsyncWriteExt, BufWriter};
 use tokio::sync::watch;
-use tokio::time::{Duration, sleep, timeout};
+use tokio::time::{Duration, sleep};
 
 const RETRY_CONNECT_WAIT_SECS: u64 = 30;
 const HB_LAST_ESTABLISHED_FILE_NAME: &str = "heartbeat_last_established.json";
+const HEARTBEAT_TIMEOUT_SEC: u64 = 7u64;
+const HEARTBEAT_NO_RESPONSE_CONSIDER_ALIVE_SEC: u64 = 420u64;
 
 impl Device {
     pub async fn maintain_heartbeat(
@@ -35,18 +37,11 @@ impl Device {
         let provider = self.get_provider("heartbeat");
         loop {
             info!(self, "Connecting to heartbeat");
-            connected_sender
-                .send(true)
-                .map_err(HeartbeatError::SendConnectedState)?;
-            if let Ok(timeout_res) = timeout(
-                // TODO : delete timeout
-                // 1h
-                Duration::from_secs(10),
-                HeartbeatClient::connect(&*provider),
-            )
-            .await
-            {
-                let mut heartbeat_client = match timeout_res {
+            tokio::select!(
+                biased;
+                heartbeat_res = HeartbeatClient::connect(&*provider) => {
+
+                let mut heartbeat_client = match heartbeat_res {
                     Ok(client) => {
                         info!(self, "Heartbeat connection established");
                         reconnect = false;
@@ -58,10 +53,10 @@ impl Device {
                         client
                     }
                     Err(e) => {
+                        error!(self, "Unable to connect to heartbeat: {e}");
                         connected_sender
                             .send(false)
                             .map_err(HeartbeatError::SendConnectedState)?;
-                        error!(self, "Unable to connect to heartbeat: {e}");
                         sleep(Duration::from_secs(RETRY_CONNECT_WAIT_SECS)).await;
                         continue;
                     }
@@ -80,23 +75,33 @@ impl Device {
                             connected_sender
                                 .send(false)
                                 .map_err(HeartbeatError::SendConnectedState)?;
-                            continue;
                         }
                     };
 
-                    if let Err(e) = heartbeat_client.send_polo().await {
+                    if !reconnect && let Err(e) = heartbeat_client.send_polo().await {
                         info!(self, "Error sending polo: {e}");
-                        continue;
                     }
                 }
                 sleep(Duration::from_secs(RETRY_CONNECT_WAIT_SECS)).await;
-            } else {
-                info!(self, "Timeout while connecting to heartbeat, trying to use services either way");
-                connected_sender
-                    .send(true)
-                    .map_err(HeartbeatError::SendConnectedState)?;
-                sleep(Duration::from_secs(240)).await;
-            }
+            },
+            res = async {
+                        // Timeout for heartbeat connection
+                        sleep(Duration::from_secs(HEARTBEAT_TIMEOUT_SEC)).await;
+                        info!(self, "Timeout while connecting to heartbeat, trying to use services either way");
+                        connected_sender
+                            .send(true)
+                            .map_err(HeartbeatError::SendConnectedState)?;
+                        sleep(Duration::from_secs(HEARTBEAT_NO_RESPONSE_CONSIDER_ALIVE_SEC)).await;
+                        Ok::<(), HeartbeatError>(())
+                } => {
+                    if let Err(e) = res {
+                        info!(self, "Failed to send ok state, while heartbeat timeout: {e}");
+                        sleep(Duration::from_secs(RETRY_CONNECT_WAIT_SECS)).await;
+                    } else {
+                        continue;
+                    }
+                },
+            )
         }
     }
 
