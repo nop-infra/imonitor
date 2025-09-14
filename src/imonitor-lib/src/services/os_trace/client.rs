@@ -193,10 +193,19 @@ impl Device {
 
                             info!(self, "Creating archive beginning at {archive_start}");
                             // Check if archive was finished
+                            /*
                             os_trace_client
-                                .create_archive(&mut f, Some(5u64), None, Some(archive_start))
+                                .create_archive(&mut f, Some(5u64), 1, Some(archive_start))
                                 .await
                                 .map_err(OsTraceError::CreateArchive)?;
+                            */
+                            if let Err(e) = os_trace_client
+                                .create_archive(&mut f, Some(5u64), Some(1), Some(archive_start))
+                                .await {
+                                info!(self, "Failed to create archive: {e}");
+                                sleep(Duration::from_secs(60)).await;
+                                continue;
+                            }
 
                             let coverage: ActivityCoverage;
                             {
@@ -205,11 +214,12 @@ impl Device {
                                     .write()
                                     .map_err(|_| OsTraceError::WriteLock)?;
 
-                                // TODO: Add range from oldest time in coverage, not oldest time in
-                                // archive (we cannot get data before archive beginning)
+                                /*
                                 let tar_coverage =
                                     extract_time_coverage_from_tar(&archive_file_path)?;
                                 activity_coverage.add_range(gap.start..tar_coverage.end);
+                                */
+                                activity_coverage.add_range(gap);
                                 coverage = activity_coverage.clone();
                             }
                             coverage
@@ -273,10 +283,6 @@ where
 
     if let Some(log) = res {
         let mut log_json =
-            /*
-            serde_json::to_string::<OsTraceLogDef>(&(log.map_err(OsTraceError::Connect)?).into())
-                .map_err(OsTraceError::SerializeLog)?;
-            */
             serde_json::to_string::<OsTraceLog>(&(log.map_err(OsTraceError::Connect)?))
                 .map_err(OsTraceError::SerializeLog)?;
         log_json.push('\n');
