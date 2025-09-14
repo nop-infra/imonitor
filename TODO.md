@@ -34,8 +34,11 @@
 - Fix activity_coverage : when log start streaming but get back online without heartbeat (at most RECONNECT_WAITING_TIME lost but not in gaps)
 - Fix os trace archive
   - Maximum size not working
+  - Handle errors
   - Clean up activity coverage to prevent asking for old periods no more in the logs.
     - The dates older than first log of last retrieved archive sould be discarded
+    - Done, to be verified
+  - Accept partial archive (parse to find last date)
   - Set maximum size of unified logs retrieved -> not working
     - Get last log and insert corresponding covered range
   - Fix TODO
