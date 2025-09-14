@@ -205,7 +205,7 @@ impl Device {
                                 info!(self, "Failed to create archive: {e}");
                                 sleep(Duration::from_secs(60)).await;
                                 continue;
-                            }
+                            } else {
 
                             let coverage: ActivityCoverage;
                             {
@@ -226,6 +226,8 @@ impl Device {
                                 .write_to_fs(&self.get_activity_coverage_file_path())
                                 .await?;
                             info!(self, "Archive created");
+
+                            }
                         }
                         // TODO: get that sleep time from config
                         sleep(Duration::from_secs(60)).await;
