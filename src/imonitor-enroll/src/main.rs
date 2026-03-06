@@ -54,7 +54,7 @@ async fn main() {
     let id = uuid::Uuid::new_v4().to_string().to_uppercase();
 
     let mut pairing_file = lockdown_client
-        .pair(id, u.get_buid().await.unwrap())
+        .pair(id, u.get_buid().await.unwrap(), None)
         .await
         .expect("Failed to pair");
 
