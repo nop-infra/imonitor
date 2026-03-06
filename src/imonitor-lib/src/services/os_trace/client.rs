@@ -200,33 +200,32 @@ impl Device {
                                 .map_err(OsTraceError::CreateArchive)?;
                             */
                             if let Err(e) = os_trace_client
-                                .create_archive(&mut f, Some(5u64), Some(1), Some(archive_start))
-                                .await {
+                                .create_archive(&mut f, Some(5000u64), Some(1), Some(archive_start))
+                                .await
+                            {
                                 info!(self, "Failed to create archive: {e}");
                                 sleep(Duration::from_secs(60)).await;
                                 continue;
                             } else {
+                                let coverage: ActivityCoverage;
+                                {
+                                    let mut activity_coverage = self
+                                        .activity_coverage
+                                        .write()
+                                        .map_err(|_| OsTraceError::WriteLock)?;
 
-                            let coverage: ActivityCoverage;
-                            {
-                                let mut activity_coverage = self
-                                    .activity_coverage
-                                    .write()
-                                    .map_err(|_| OsTraceError::WriteLock)?;
-
-                                /*
-                                let tar_coverage =
-                                    extract_time_coverage_from_tar(&archive_file_path)?;
-                                activity_coverage.add_range(gap.start..tar_coverage.end);
-                                */
-                                activity_coverage.add_range(gap);
-                                coverage = activity_coverage.clone();
-                            }
-                            coverage
-                                .write_to_fs(&self.get_activity_coverage_file_path())
-                                .await?;
-                            info!(self, "Archive created");
-
+                                    /*
+                                    let tar_coverage =
+                                        extract_time_coverage_from_tar(&archive_file_path)?;
+                                    activity_coverage.add_range(gap.start..tar_coverage.end);
+                                    */
+                                    activity_coverage.add_range(gap);
+                                    coverage = activity_coverage.clone();
+                                }
+                                coverage
+                                    .write_to_fs(&self.get_activity_coverage_file_path())
+                                    .await?;
+                                info!(self, "Archive created");
                             }
                         }
                         // TODO: get that sleep time from config
