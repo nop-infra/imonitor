@@ -38,6 +38,8 @@ impl Device {
         loop {
             info!(self, "Connecting to heartbeat");
             tokio::select!(
+                // Force tokio not to select randomly the select! branches.
+                // It processes it in the appearing order
                 biased;
                 heartbeat_res = HeartbeatClient::connect(&*provider) => {
 
@@ -86,11 +88,18 @@ impl Device {
             },
             res = async {
                         // Timeout for heartbeat connection
+                        // After a lot of connections, lockdownd seem to hang in the middle of the
+                        // heartbeat establishment. The following code is a dirty fix for that : it
+                        // continues the process and tries to use services as if the heartbeat is
+                        // ok.
+                        // TODO: dynamically hook lockdownd to reproduce the bug
                         sleep(Duration::from_secs(HEARTBEAT_TIMEOUT_SEC)).await;
                         info!(self, "Timeout while connecting to heartbeat, trying to use services either way");
                         connected_sender
                             .send(true)
                             .map_err(HeartbeatError::SendConnectedState)?;
+                        // If we don't receive an answer after a while, we consider the connection
+                        // alive
                         sleep(Duration::from_secs(HEARTBEAT_NO_RESPONSE_CONSIDER_ALIVE_SEC)).await;
                         Ok::<(), HeartbeatError>(())
                 } => {

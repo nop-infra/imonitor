@@ -312,7 +312,7 @@ impl Device {
         let mut os_trace_archive_hb_rx = rx.clone();
 
         /*
-        // No parallelized version
+        // Not parallelized version
         let hb = self.maintain_heartbeat(config);
         let syslog = self.stream_syslog(refresh_rate);
         let crashes = self.get_crashes(refresh_rate);
@@ -320,35 +320,47 @@ impl Device {
         */
 
         let hb = tokio::spawn(async move { device_hb.maintain_heartbeat(config, &tx).await });
+        
         /*
+        // os_trace service seems more useful than syslog: formatted as json.
+        // TODO: Do a thorough comparison of the data delivered by the 2 services
         let _syslog =
             tokio::spawn(async move { device_syslog.stream_syslog(refresh_rate, &mut syslog_hb_rx).await });
         */
+
         let crashes =
             tokio::spawn(async move { device_crashes.get_crashes(refresh_rate, &mut rx).await });
+
         let os_trace_log = tokio::spawn(async move {
             device_os_trace_log
                 .stream_os_trace_logs(refresh_rate, &mut os_trace_log_hb_rx)
                 .await
         });
+
+        /*
+        // Service still under development. Using it in production is not recommended.
         let os_trace_archive = tokio::spawn(async move {
             device_os_trace_archive
                 .create_os_trace_archive(refresh_rate, &mut os_trace_archive_hb_rx)
                 .await
         });
+        */
+
 
         /*
+        // Test: await services individually
         let _ = hb.await;
         let _ = syslog.await;
         let _ = crashes.await;
         */
 
+        // Fire all services at once. They run concurrently.
         try_join!(
             flatten(hb),
             //flatten(syslog),
             flatten(crashes),
             flatten(os_trace_log),
-            flatten(os_trace_archive),
+            //flatten(os_trace_archive),
         )?;
 
         Ok(())
