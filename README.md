@@ -4,12 +4,14 @@ Device monitoring through remote lockdownd commands.
 
 ## Disclaimer
 
-This is a personal project, maintained when I have time.
-This work is heavily based on the wonderful idevice crate by Jackson Coxson (https://github.com/jkcoxson/idevice).
+This is a personal project, maintained when possible.
+This work is heavily based on the great idevice crate by Jackson Coxson (https://github.com/jkcoxson/idevice).
 
-Do not consider this stable, some features are still under development, mainly :
+Do not consider this stable, a lot of features are still under development, including some unstable code :
 - Unified logs archive extraction
 - Time coverage
+
+Note: you can only retrieve data when you are on a Wifi. This is a lockdown limitation (socket only exposed when on Wifi).
 
 ## Code structure
 
