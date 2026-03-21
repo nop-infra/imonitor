@@ -1,6 +1,6 @@
 [config]
 refresh_rate = "15s"
-base_dir = "/home/user/imnonitor"
+base_dir = "/home/user/imonitor"
 
 [encryption]
 public_keys = [

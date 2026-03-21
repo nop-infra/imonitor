@@ -88,8 +88,8 @@ async fn main() {
         }
 
         // Add device to vec of succeded devices to monitor and
-        // write pairing file to final destination
-        // This will be used to write final devices.toml file
+        // write pairing file to the final destination
+        // This will be used to update devices.toml file content
         let mut device_config_final = device_config.clone();
         device_config_final.pairing_file_path = device.get_pairing_file_path();
         monitored_devices_final.devices.push(device_config_final);

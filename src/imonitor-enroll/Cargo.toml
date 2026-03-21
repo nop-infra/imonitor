@@ -8,5 +8,4 @@ clap = "4"
 idevice = { git = "https://github.com/jkcoxson/idevice.git", features = ["full"] }
 tokio = { version = "1", features = ["full"] }
 env_logger = "0"
-log = "0"
 uuid = "1"
