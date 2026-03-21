@@ -7,9 +7,3 @@ ExtendedLogging / com.apple.mobile.lockdown
 DebugKDB / com.apple.mobile.lockdown
 RaptorCertsPref / com.apple.mobile.lockdown
 SecureCopyValue / com.apple.mobile.lockdownd => "enablelockdownparanoia"
-
-Pair records are deleted upon :
-- reboot
-- passcode change
-
-

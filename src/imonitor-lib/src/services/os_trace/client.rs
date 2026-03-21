@@ -1,4 +1,4 @@
-use super::archive::extract_time_coverage_from_tar;
+//use super::archive::extract_time_coverage_from_tar;
 use super::errors::OsTraceError;
 use crate::device::Device;
 use crate::device::activity_coverage::ActivityCoverage;

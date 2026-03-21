@@ -1,6 +1,6 @@
 [workspace]
-members = ["src/imonitor-lib", "src/imonitor", "src/imonitor-enroll", "src/logger", "src/imonitor-send"]
-default-members = ["src/imonitor", "src/logger"]
+members = ["src/imonitor-lib", "src/imonitor", "src/imonitor-enroll", "src/logger"]
+default-members = ["src/imonitor", "src/logger", "src/imonitor-enroll"]
 resolver = "3"
 
 [profile.dev]

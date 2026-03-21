@@ -4,7 +4,6 @@ use idevice::{
     lockdown::LockdownClient,
     usbmuxd::{Connection, UsbmuxdAddr, UsbmuxdConnection},
 };
-use log::info;
 
 const CONNECTION_LABEL: &str = "test";
 
@@ -64,7 +63,7 @@ async fn main() {
         .await
         .expect("Pairing file test failed");
 
-    info!("Enabling lockdownd wifi connection");
+    println!("Enabling lockdownd wifi connection");
 
     lockdown_client
         .set_value(
