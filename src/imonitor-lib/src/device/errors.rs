@@ -2,7 +2,9 @@ use super::activity_coverage::errors::ActivityCoverageError;
 use crate::services::crashes::errors::CrashError;
 use crate::services::heartbeat::errors::HeartbeatError;
 use crate::services::os_trace::errors::OsTraceError;
+use crate::services::remote_xpc::errors::RemoteXPCError;
 use crate::services::syslog::errors::SyslogError;
+use crate::services::diagnosticsservice::errors::DiagnosticsServiceError;
 use idevice::IdeviceError;
 
 #[derive(Debug)]
@@ -17,6 +19,8 @@ pub enum DeviceError {
     Syslog(SyslogError),
     Crash(CrashError),
     OsTrace(OsTraceError),
+    RemoteXPC(RemoteXPCError),
+    DiagnosticsService(DiagnosticsServiceError),
     CreateDir(std::io::Error, String),
     CreateFile(std::io::Error, String),
     Task(tokio::task::JoinError),
@@ -46,6 +50,8 @@ impl std::fmt::Display for DeviceError {
             DeviceError::Syslog(e) => write!(f, "Syslog task failed: {e}"),
             DeviceError::Crash(e) => write!(f, "Crash task failed: {e}"),
             DeviceError::OsTrace(e) => write!(f, "Os trace failed: {e}"),
+            DeviceError::RemoteXPC(e) => write!(f, "RemoteXPC failed: {e}"),
+            DeviceError::DiagnosticsService(e) => write!(f, "DiagnosticsService failed: {e}"),
             DeviceError::Task(e) => write!(f, "Tokio task failed: {e}"),
             DeviceError::ActivityCoverage(e) => write!(f, "Activity coverage error: {e}"),
             DeviceError::CreateDir(e, dir_name) => {
@@ -81,6 +87,18 @@ impl From<CrashError> for DeviceError {
 impl From<OsTraceError> for DeviceError {
     fn from(error: OsTraceError) -> Self {
         DeviceError::OsTrace(error)
+    }
+}
+
+impl From<RemoteXPCError> for DeviceError {
+    fn from(error: RemoteXPCError) -> Self {
+        DeviceError::RemoteXPC(error)
+    }
+}
+
+impl From<DiagnosticsServiceError> for DeviceError {
+    fn from(error: DiagnosticsServiceError) -> Self {
+        DeviceError::DiagnosticsService(error)
     }
 }
 

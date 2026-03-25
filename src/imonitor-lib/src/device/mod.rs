@@ -29,6 +29,8 @@ static SUB_DIRS: phf::Map<&'static str, &'static str> = phf_map! {
     "crash_files" => "crashes/files",
     "syslog" => "syslog",
     "os_trace" => "os_trace",
+    "remote_xpc" => "remote_xpc",
+    "sysdiagnose" => "sysdiagnose",
     "os_trace_log" => "os_trace/log",
     "os_trace_archive" => "os_trace/archive",
     "os_trace_pid" => "os_trace/pid",
@@ -218,6 +220,22 @@ impl Device {
             .to_string()
     }
 
+    pub fn get_remote_xpc_dir(&self) -> String {
+        let base_path = PathBuf::from(self.base_dir());
+        base_path
+            .join(SUB_DIRS.get("remote_xpc").unwrap_or(&""))
+            .to_string_lossy()
+            .to_string()
+    }
+
+    pub fn get_sysdiagnose_dir(&self) -> String {
+        let base_path = PathBuf::from(self.base_dir());
+        base_path
+            .join(SUB_DIRS.get("sysdiagnose").unwrap_or(&""))
+            .to_string_lossy()
+            .to_string()
+    }
+
     pub fn get_os_trace_archive_dir(&self) -> String {
         let base_path = PathBuf::from(self.base_dir());
         base_path
@@ -301,15 +319,19 @@ impl Device {
 
         let (tx, mut rx) = watch::channel(false);
 
-        let device_hb = self.clone();
-        //let device_syslog = self.clone();
-        let device_crashes = self.clone();
-        let device_os_trace_log = self.clone();
-        let device_os_trace_archive = self.clone();
+        let device = Arc::new(self.clone());
+        //let device_syslog = device.clone();
+        let device_crashes = device.clone();
+        let device_os_trace_log = device.clone();
+        let device_os_trace_archive = device.clone();
+        let device_remote_xpc = device.clone();
+        let device_sysdiagnose = device.clone();
 
         //let mut syslog_hb_rx = rx.clone();
         let mut os_trace_log_hb_rx = rx.clone();
         let mut os_trace_archive_hb_rx = rx.clone();
+        let mut remote_xpc_hb_rx = rx.clone();
+        let mut sysdiagnose_hb_rx = rx.clone();
 
         /*
         // Not parallelized version
@@ -319,8 +341,8 @@ impl Device {
         let _ = tokio::join!(hb, syslog, crashes);
         */
 
-        let hb = tokio::spawn(async move { device_hb.maintain_heartbeat(config, &tx).await });
-        
+        let hb = tokio::spawn(async move { device.maintain_heartbeat(config, &tx).await });
+
         /*
         // os_trace service seems more useful than syslog: formatted as json.
         // TODO: Do a thorough comparison of the data delivered by the 2 services
@@ -337,15 +359,26 @@ impl Device {
                 .await
         });
 
-        /*
         // Service still under development. Using it in production is not recommended.
         let os_trace_archive = tokio::spawn(async move {
             device_os_trace_archive
                 .create_os_trace_archive(refresh_rate, &mut os_trace_archive_hb_rx)
                 .await
         });
-        */
 
+        let remote_xpc = tokio::spawn(async move {
+            device_remote_xpc
+                .discover_remote_xpc_services(&mut remote_xpc_hb_rx)
+                .await
+        });
+
+        /*
+        let sysdiagnose = tokio::spawn(async move {
+            device_sysdiagnose
+                .get_sysdiagnose(&mut sysdiagnose_hb_rx)
+                .await
+        });
+        */
 
         /*
         // Test: await services individually
@@ -360,7 +393,9 @@ impl Device {
             //flatten(syslog),
             flatten(crashes),
             flatten(os_trace_log),
-            //flatten(os_trace_archive),
+            flatten(os_trace_archive),
+            flatten(remote_xpc),
+            //flatten(sysdiagnose),
         )?;
 
         Ok(())

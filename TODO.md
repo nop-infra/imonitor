@@ -31,6 +31,8 @@
 
 ## TODO
 
+- Connect to services using RemoteXPC only
+  - Test remote pairing, without allowWifiDebugging
 - Fix activity_coverage : when log start streaming but get back online without heartbeat (at most RECONNECT_WAITING_TIME lost but not in gaps)
 - Fix os trace archive
   - Maximum size not working

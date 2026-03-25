@@ -5,6 +5,7 @@ edition = "2024"
 
 [dependencies]
 chrono = { version = "0.4", features = ["serde"] }
+futures-util = "0.3.32"
 humantime-serde = "1"
 #idevice = { version = "=0.1.37", features = ["full"] }
 idevice = { git = "https://github.com/jkcoxson/idevice.git", features = ["full"] }
